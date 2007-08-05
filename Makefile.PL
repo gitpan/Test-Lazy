@@ -7,7 +7,7 @@ WriteMakefile
           'PREREQ_PM' => {
                            'Carp' => '0',
                            'Class::Accessor' => '0',
-                           'JSON' => '0',
+                           'JSON::XS' => '0',
                            'Test::More' => '0'
                          },
           'INSTALLDIRS' => 'site',

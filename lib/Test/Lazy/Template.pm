@@ -113,7 +113,12 @@ sub test {
 	my $template = $self->_template;
 	my $size = @$template;
 	my $mdf_template;
+	my $base_stmt;
 	if (ref $_[0] eq 'ARRAY') {
+		$mdf_template = shift;
+	}
+	elsif (ref $_[1] eq 'ARRAY') {
+		$base_stmt = shift;
 		$mdf_template = shift;
 	}
 	else {
@@ -134,7 +139,7 @@ sub test {
 		
 		my ($mdf_stmt, $mdf_cmpr, $mdf_rslt);
 		if (2 == @$mdf_line) {
-			($mdf_stmt, $mdf_cmpr, $mdf_rslt) = (undef, @$mdf_line);
+			($mdf_stmt, $mdf_cmpr, $mdf_rslt) = ($base_stmt, @$mdf_line);
 		}
 		else {
 			($mdf_stmt, $mdf_cmpr, $mdf_rslt) = @$mdf_line;

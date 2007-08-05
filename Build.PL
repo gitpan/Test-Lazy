@@ -11,7 +11,7 @@ my $builder = Module::Build->new(
         'Test::More' => 0,
     },
     requires => {
-        'JSON' => 0,
+        'JSON::XS' => 0,
         'Carp' => 0,
         'Class::Accessor' => 0,
     },

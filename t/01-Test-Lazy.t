@@ -8,16 +8,24 @@ use lib (qw/lib/);
 use vars qw/$c $d/;
 
 use Test::Lazy qw/check try template/;
+use constant POD => 0;
 
 # POD {{{
 	# Should fail
-	0 and check([qw/a b/] => is => [qw/a b c/]);
+	POD and check([qw/a b/] => is => [qw/a b c/]);
 	# Should fail
-	0 and try("2 + 2" => '==' => 5);
+	POD and try("2 + 2" => '==' => 5);
 	# Should pass
-	try('qw/a/' => is => ['a']);
+	POD and try('qw/a/' => is => ['a']);
 	# Should pass
-	try('[qw/a/]' => is => ['a']);
+	POD and try('[qw/a/]' => is => ['a']);
+	# Should fail
+	POD and try(sub { 1 } => is => 0);
+	# Should fail
+	my $rsc = 1;
+	POD and try(sub { $rsc } => is => 0);
+	# Should fail
+	POD and try(sub { $rsc } => is => 0);
 # }}}
 # check {{{
 Test::Lazy::check(1 => ok => undef);

@@ -9,11 +9,11 @@ Test::Lazy - A quick and easy way to compose and run tests with useful output.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.03
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -37,10 +37,13 @@ BEGIN {
 	use base qw/Exporter/;
 }
 
-use JSON;
+use JSON::XS;
 use Test::Builder();
 use Test::More();
 use Carp;
+use B::Deparse;
+my $deparser = B::Deparse->new;
+$deparser->ambient_pragmas(strict => 'all', warnings => 'all');
 
 use Test::Lazy::Template;
 my $Test = Test::Builder->new;
@@ -49,24 +52,24 @@ sub _up() { $Test::Builder::Level += 1 }
 my %cmpr = (
 	ok => sub { _up and Test::More::ok($_[0], $_[2]) },
 	not_ok => sub { _up and Test::More::ok(! $_[0], $_[2]) },
-	(map { my $mtd = $_; $_ => sub { no strict 'refs'; _up and "Test::More::$mtd"->($_[0], $_[1], $_[2]) } }
-		qw/is isnt like unlike/),
 	(map { my $mtd = $_; $_ => sub { _up and Test::More::cmp_ok($_[0] => $mtd => $_[1], $_[2]) } }
 		qw/< > <= >= lt gt le ge == != eq ne/),
+	(map { my $mtd = $_; $_ => sub { no strict 'refs'; _up and "Test::More::$mtd"->($_[0], $_[1], $_[2]) } }
+		qw/is isnt like unlike/),
 );
 
 sub _expand($) {
 	my $value = shift;
 	my $xpnd_value = $value;
 	$xpnd_value = 'undef' unless defined $value;
-	$xpnd_value = objToJson($value) if ref $value eq 'ARRAY' || ref $value eq 'HASH';
+	$xpnd_value = to_json($value) if ref $value eq 'ARRAY' || ref $value eq 'HASH';
 	return $xpnd_value;
 }
 
 sub _test($$$$) {
 	my ($cmpr, $value0, $value1, $msg) = @_;
 
-	local $Test::Builder::Level = $Test::Builder::Level ? $Test::Builder::Level + 2 : 3;
+	local $Test::Builder::Level = $Test::Builder::Level ? $Test::Builder::Level + 1 : 1;
 
 	if (ref $cmpr eq "CODE") {
 		Test::More::ok($cmpr->($value0, $value1), $msg);
@@ -107,7 +110,7 @@ representation before comparison.
 sub try {
 	my ($stmt, $cmpr, $rslt, $msg) = @_;
 
-	my @value0 = eval $stmt;
+	my @value0 = ref $stmt eq "CODE" ? $stmt->() : eval $stmt;
 	die "$stmt: $@" if $@;
 	my $value0;
 	if (@value0 > 1) {
@@ -136,13 +139,27 @@ sub try {
 	$value0 = _expand $value0;
 	my $value1 = _expand $rslt;
 
-	my $_msg = "$stmt $cmpr $value1";
+	my $_msg;
+	if (ref $stmt eq "CODE") {
+#		$_msg = "$value1 $cmpr " . $deparser->coderef2text($stmt);
+		my $deparse = $deparser->coderef2text($stmt);
+#		$deparse =~ s/\n//g if $deparse =~ m/\n/ > 2;
+		my @deparse = split m/\n\s*/, $deparse;
+		$deparse = join ' ', @deparse if 3 == @deparse;
+		$_msg = "$deparse $cmpr $value1";
+	}
+	else {
+		$_msg = "$stmt $cmpr $value1";
+	}
+
 	if (defined $msg) {
 		$msg =~ s/%/$_msg/;
 	}
 	else {
 		$msg = $_msg;
 	}
+
+	local $Test::Builder::Level = $Test::Builder::Level ? $Test::Builder::Level + 1 : 1;
 
 	return _test $cmpr, $value0, $value1, $msg;
 }

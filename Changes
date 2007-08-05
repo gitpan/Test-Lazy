@@ -1,2 +1,12 @@
+TODO:
+- Add the capability to take lists of tests to Test::Lazy::try
+- Added the capability to use (and deparse) a code reference with Test::Lazy::try
+
+0.03 Sunday August 05 11:37:34 PDT 2007: 
+- Switch to using JSON::XS
+
+0.02 Sunday July 01 15:33:35 PDT 2007
+- Added $base_stmt capability to Test::Lazy::Template::test
+
 0.01 Saturday June 30 14:00:38 PDT 2007:
 - Initial version

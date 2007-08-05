@@ -1,6 +1,6 @@
 ---
 name: Test-Lazy
-version: 0.01
+version: 0.03
 author:
   - 'Robert Krimen <rkrimen@cpan.org>'
 abstract: A quick and easy way to compose and run tests with useful output.
@@ -10,13 +10,13 @@ resources:
 requires:
   Carp: 0
   Class::Accessor: 0
-  JSON: 0
+  JSON::XS: 0
 build_requires:
   Test::More: 0
 provides:
   Test::Lazy:
     file: lib/Test/Lazy.pm
-    version: 0.01
+    version: 0.03
   Test::Lazy::Template:
     file: lib/Test/Lazy/Template.pm
 generated_by: Module::Build version 0.2808
