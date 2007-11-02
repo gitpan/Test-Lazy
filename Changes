@@ -2,6 +2,13 @@ TODO:
 - Add the capability to take lists of tests to Test::Lazy::try
 - Added the capability to use (and deparse) a code reference with Test::Lazy::try
 
+0.050_2 Friday November 02 16:32:20 PDT 2007:
+- Objectification of the interface via Test::Lazy::Tester
+- Customizable via instantiation (new) or ->cmp_scalar, ->cmp_structure, ->render accessors
+- Custom rendering based on value type (e.g. HASH, ARRAY, Path::Class::File, etc.)
+- More robust testing using Test::Deep
+- JSON::XS requirement dropped, using Data::Dumpe instead
+
 0.03 Sunday August 05 11:37:34 PDT 2007: 
 - Switch to using JSON::XS
 
