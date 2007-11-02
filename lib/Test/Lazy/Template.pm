@@ -3,11 +3,13 @@ package Test::Lazy::Template;
 use strict;
 use warnings;
 
-use base qw/Class::Accessor Exporter/;
-__PACKAGE__->mk_accessors(qw/_template/);
+use base qw/Class::Accessor::Fast/;
 
-use Test::Lazy qw/try/;
+__PACKAGE__->mk_accessors(qw/tester template/);
+
+use Test::Lazy::Tester;
 use Test::Builder();
+use Scalar::Util qw/blessed/;
 use Carp;
 
 =head1 NAME
@@ -83,6 +85,7 @@ Returns the new C<Test::Lazy::Template> object
 
 sub new {
 	my $self = bless {}, shift;
+    my $tester = blessed $_[0] && $_[0]->isa("Test::Lazy::Tester") ? shift : Test::Lazy::Tester->new;
 	my $template = $_[0];
 	if (ref $template eq 'SCALAR') {
 		my @template = map { [ $_ ] } grep { length $_ && $_ !~ m/^\s*#/ } split m/\n/, $$template;
@@ -93,7 +96,8 @@ sub new {
 	else {
 		$template = [ @_ ];
 	}
-	$self->_template($template);
+	$self->tester($tester);
+	$self->template($template);
 	return $self;
 }
 
@@ -110,7 +114,7 @@ Modify and then run each test in $template by using <test> to complete each test
 sub test {
 	my $self = shift;
 
-	my $template = $self->_template;
+	my $template = $self->template;
 	my $size = @$template;
 	my $mdf_template;
 	my $base_stmt;
@@ -157,9 +161,9 @@ sub test {
 		my ($rslt) = grep { defined } ($mdf_rslt, $line->[2]);
 
 		{
-			local $Test::Builder::Level = $Test::Builder::Level ? $Test::Builder::Level + 2 : 2;
+			local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-			try($stmt, $cmpr, $rslt, "$index: %");
+			$self->tester->try($stmt, $cmpr, $rslt, "$index: %");
 		}
 	}
 

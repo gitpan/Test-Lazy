@@ -1,6 +1,6 @@
 ---
 name: Test-Lazy
-version: 0.03
+version: 0.050_1
 author:
   - 'Robert Krimen <rkrimen@cpan.org>'
 abstract: A quick and easy way to compose and run tests with useful output.
@@ -9,17 +9,21 @@ resources:
   license: http://dev.perl.org/licenses/
 requires:
   Carp: 0
-  Class::Accessor: 0
-  JSON::XS: 0
+  Class::Accessor::Fast: 0
+  Data::Dumper: 0
+  Scalar::Util: 0
+  Test::Deep: 0
 build_requires:
   Test::More: 0
 provides:
   Test::Lazy:
     file: lib/Test/Lazy.pm
-    version: 0.03
+    version: 0.050_1
   Test::Lazy::Template:
     file: lib/Test/Lazy/Template.pm
-generated_by: Module::Build version 0.2808
+  Test::Lazy::Tester:
+    file: lib/Test/Lazy/Tester.pm
+generated_by: Module::Build version 0.2806
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
   version: 1.2

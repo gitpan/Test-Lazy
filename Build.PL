@@ -11,9 +11,11 @@ my $builder = Module::Build->new(
         'Test::More' => 0,
     },
     requires => {
-        'JSON::XS' => 0,
+        'Test::Deep' => 0,
+        'Data::Dumper' => 0,
         'Carp' => 0,
-        'Class::Accessor' => 0,
+        'Class::Accessor::Fast' => 0,
+        'Scalar::Util' => 0,
     },
     add_to_cleanup      => [ 'Test-Lazy-*' ],
     create_makefile_pl => 'traditional',

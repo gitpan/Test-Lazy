@@ -9,11 +9,11 @@ Test::Lazy - A quick and easy way to compose and run tests with useful output.
 
 =head1 VERSION
 
-Version 0.03
+Version 0.050_1
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.050_1';
 
 =head1 SYNOPSIS
 
@@ -37,9 +37,211 @@ BEGIN {
 	use base qw/Exporter/;
 }
 
+use Test::Lazy::Tester;
+
+{
+    my $singleton;
+    sub _singleton() {
+        return $singleton ||= Test::Lazy::Tester->new;
+    }
+}
+
+=head1 EXPORTS
+
+=head2 check( <got>, <cmpr>, <expected>, [ <msg> ] )
+
+Compare <got> to <expected> using <cmpr>.
+Optionally provide a <msg> to display on failure. If <msg> is not given,
+then one will be automatically made from <got>, <cmpr>, and <expected>.
+
+Note, if <got> or <expected> is an ARRAY or HASH, this function will convert them to their JSON
+representation before comparison.
+
+	check([qw/a b/] => is => [qw/a b c/]);
+
+	# This will produce the following output:
+
+	#   Failed test '["a","b"] is ["a","b","c"]'
+	#   at __FILE__ line __LINE__.
+	#         got: '["a","b"]'
+	#    expected: '["a","b","c"]'
+
+=cut
+
+sub check {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    return _singleton->check(@_);
+}
+
+=head2 try( <stmt>, <cmpr>, <expected>, [ <msg> ] )
+
+Evaluate <stmt> and compare the result to <expected> using <cmpr>.
+Optionally provide a <msg> to display on failure. If <msg> is not given,
+then one will be automatically made from <stmt>, <cmpr>, and <expected>.
+
+C<try> will also try to guess what representation is best for the result of
+the statement, whether that be single value, ARRAY, or HASH. It'll do this based
+on what is returned by the statement, and the type of <expected>.
+See `perldoc -m Test::Lazy` for more detail.
+
+Note, if <expected> is an ARRAY or HASH, this function will convert it to it's JSON
+representation before comparison.
+
+	try("2 + 2" => '==' => 5);
+
+	# This will produce the following output:
+
+	#   Failed test '2 + 2 == 5'
+	#   at __FILE__ line __LINE__.
+	#          got: '4'
+	#     expected: '5'
+
+=cut
+
+sub try {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    return _singleton->try(@_);
+}
+
+=head2 template( ... ) 
+
+Convenience function for creating a C<Test::Lazy::Template>. All arguments are directly passed to
+C<Test::Lazy::Template->new>.
+
+See C<Test::Lazy::Template> for more details.
+
+Returns a new C<Test::Lazy::Template> object.
+
+=cut
+
+sub template {
+    return _singleton->template(@_);
+}
+
+1;
+
+__END__
+
+use Data::Dumper qw/Dumper/;
+use Carp;
+use Test::Deep;
+use Test::Builder();
+use B::Deparse;
+my $deparser = B::Deparse->new;
+$deparser->ambient_pragmas(strict => 'all', warnings => 'all');
+
+my %scalar_compare = (
+	ok => sub {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::More::ok($_[0], $_[2])
+    },
+
+	not_ok => sub {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::More::ok(! $_[0], $_[2])
+    },
+
+	(map { my $mtd = $_; $_ => sub {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::More::cmp_ok($_[0] => $mtd => $_[1], $_[2])
+    } }
+	qw/< > <= >= lt gt le ge == != eq ne/),
+
+	(map { my $method = $_; $_ => sub {
+        no strict 'refs';
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+       "Test::More::$method"->($_[0], $_[1], $_[2])
+    } }
+	qw/is isnt like unlike/),
+);
+
+my %structure_compare = (
+	ok => sub {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::More::ok($_[0], $_[2])
+    },
+
+	not_ok => sub {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::More::ok(! $_[0], $_[2])
+    },
+
+    (map { $_ => sub {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::Deep::cmp_bag($_[0], $_[1], $_[2]);
+    } }
+    qw/bag same_bag samebag/),
+
+    (map { $_ => sub {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::Deep::cmp_set($_[0], $_[1], $_[2]);
+    } }
+    qw/set same_set sameset/),
+
+    (map { $_ => sub {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::Deep::cmp_deeply($_[0], $_[1], $_[2]);
+    } }
+    qw/same is like/),
+
+	(map { $_ => sub {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::More::ok(!Test::Deep::eq_deeply($_[0], $_[1]), $_[2]);
+    } }
+    qw/isnt unlink/),
+);
+
+sub _render_value($) {
+    local $Data::Dumper::Indent = 0;
+    local $Data::Dumper::Varname = 0;
+    local $Data::Dumper::Terse = 1;
+	my $value = shift;
+	my $render = $value;
+	$render = 'undef' unless defined $value;
+	$render = Dumper($value) if ref $value eq 'ARRAY' || ref $value eq 'HASH';
+	return $render;
+}
+
+sub _test($$$$) {
+	my ($compare, $got, $expect, $notice) = @_;
+
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+	if (ref $compare eq "CODE") {
+		Test::More::ok($compare->($got, $expect), $notice);
+	}
+	else {
+        my $structure = ref $expect eq "ARRAY" || ref $expect eq "HASH";
+        my $scalar = ! $structure;
+
+        my $comparer_source = $scalar ? \%scalar_compare : \%structure_compare;
+
+		croak "Don't know how to compare by ($compare)" unless my $comparer = $comparer_source->{$compare};
+		$comparer->($got, $expect, $notice);
+	}
+}
+
+sub _render_notice($$$$) {
+    my ($left, $compare, $right, $notice) = @_;
+
+	my $_notice = "$left $compare $right";
+	if (defined $notice) {
+        # TODO Do %% escaping
+		$notice =~ s/%/$_notice/;
+	}
+	else {
+		$notice = $_notice;
+	}
+
+    return $notice;
+}
+
+__END__
+
 use JSON::XS;
 use Test::Builder();
 use Test::More();
+use Test::Deep;
 use Carp;
 use B::Deparse;
 my $deparser = B::Deparse->new;
@@ -80,7 +282,7 @@ sub _test($$$$) {
 	}
 }
 
-=over 4
+=over
 
 =item try( <stmt>, <cmpr>, <expected>, [ <msg> ] )
 

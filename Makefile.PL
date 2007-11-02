@@ -6,8 +6,10 @@ WriteMakefile
           'VERSION_FROM' => 'lib/Test/Lazy.pm',
           'PREREQ_PM' => {
                            'Carp' => '0',
-                           'Class::Accessor' => '0',
-                           'JSON::XS' => '0',
+                           'Class::Accessor::Fast' => '0',
+                           'Data::Dumper' => '0',
+                           'Scalar::Util' => '0',
+                           'Test::Deep' => '0',
                            'Test::More' => '0'
                          },
           'INSTALLDIRS' => 'site',

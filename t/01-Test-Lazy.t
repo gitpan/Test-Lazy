@@ -1,4 +1,4 @@
-#!perl -T
+#!perl
 
 use strict;
 use warnings;
@@ -6,26 +6,29 @@ use warnings;
 use Test::More (0 ? (tests => 1) : 'no_plan');
 use lib (qw/lib/);
 use vars qw/$c $d/;
+use Test::Deep;
 
 use Test::Lazy qw/check try template/;
-use constant POD => 0;
+use constant TEST_EXAMPLES => $ENV{TEST_EXAMPLES};
 
 # POD {{{
+TEST_EXAMPLES and do {
 	# Should fail
-	POD and check([qw/a b/] => is => [qw/a b c/]);
+	check([qw/a b/] => is => [qw/a b c/]);
 	# Should fail
-	POD and try("2 + 2" => '==' => 5);
-	# Should pass
-	POD and try('qw/a/' => is => ['a']);
-	# Should pass
-	POD and try('[qw/a/]' => is => ['a']);
-	# Should fail
-	POD and try(sub { 1 } => is => 0);
-	# Should fail
-	my $rsc = 1;
-	POD and try(sub { $rsc } => is => 0);
-	# Should fail
-	POD and try(sub { $rsc } => is => 0);
+    try("2 + 2" => '==' => 5);
+    # Should pass
+    try('qw/a/' => is => ['a']);
+    # Should pass
+    try('[qw/a/]' => is => ['a']);
+    # Should fail
+    try(sub { 1 } => is => 0);
+    # Should fail
+    my $rsc = 1;
+    try(sub { $rsc } => is => 0);
+    # Should fail
+    try(sub { $rsc } => is => 0);
+};
 # }}}
 # check {{{
 Test::Lazy::check(1 => ok => undef);
@@ -103,7 +106,7 @@ $template->test([
 	[ is => { 0 => 0, 1 => 2, 2 => 4, 3 => 6, 4 => 8 } ],
 ]);
 
-$template = new Test::Lazy::Template([ 
+$template = Test::Lazy::Template->new([ 
 	[ "qw/1/" ],
 	[ "qw/a/" ],
 	[ "qw/apple/" ],
