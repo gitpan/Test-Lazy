@@ -13,21 +13,19 @@ use constant TEST_EXAMPLES => $ENV{TEST_EXAMPLES};
 
 # POD {{{
 TEST_EXAMPLES and do {
-	# Should fail
 	check([qw/a b/] => is => [qw/a b c/]);
-	# Should fail
     try("2 + 2" => '==' => 5);
-    # Should pass
     try('qw/a/' => is => ['a']);
-    # Should pass
     try('[qw/a/]' => is => ['a']);
-    # Should fail
     try(sub { 1 } => is => 0);
-    # Should fail
     my $rsc = 1;
     try(sub { $rsc } => is => 0);
-    # Should fail
     try(sub { $rsc } => is => 0);
+	try('2 + 2' => '==' => 5, "Math is hard: %?");
+    Test::Lazy->singleton->cmp_scalar->{is_xyzzy} = sub {
+        Test::More::cmp_ok($_[0] => eq => "xyzzy", $_[2]);
+    };
+	check("xyzy" => "is_xyzzy");
 };
 # }}}
 # check {{{

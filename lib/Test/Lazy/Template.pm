@@ -52,13 +52,11 @@ The best way to show this is in an example:
 		[ is => { 0 => 0, 1 => 2, 2 => 4, 3 => 6, 4 => 8 } ],
 	]);
 
-=over 4
+=head1 METHODS
 
-=cut
+=head2 Test::Lazy::Template->new( <template> )
 
-=item Test::Lazy::Template->new( <template> )
-
-=item Test::Lazy::Template->new( <test>, <test>, ..., <test> )
+=head2 Test::Lazy::Template->new( <test>, <test>, ..., <test> )
 
 Create a new C<Test::Lazy::Template> object using the giving test specification.
 
@@ -101,11 +99,11 @@ sub new {
 	return $self;
 }
 
-=item $template->test( <template> )
+=head2 $template->test( <template> )
 
 For each test in $template, modify and run each the test according to the corresponding entry in <template>.
 
-=item $template->test( <test> )
+=head2 $template->test( <test> )
 
 Modify and then run each test in $template by using <test> to complete each test's specification.
 
@@ -168,11 +166,5 @@ sub test {
 	}
 
 }
-
-=pod
-
-=back
-
-=cut
 
 1;
