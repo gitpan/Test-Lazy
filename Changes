@@ -1,6 +1,9 @@
 TODO:
 - Add the capability to take lists of tests to Test::Lazy::try
-- Added the capability to use (and deparse) a code reference with Test::Lazy::try
+- Didn't I do this already: Added the capability to use (and deparse) a code reference with Test::Lazy::try 
+
+0.061 Sunday November 04 22:00:01 PST 2007:
+- B::Deparse is now optional
 
 0.060 Sunday November 04 12:11:16 PST 2007:
 - New documentation reflecting the refactoring

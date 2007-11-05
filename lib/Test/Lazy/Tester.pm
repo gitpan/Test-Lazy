@@ -103,10 +103,14 @@ use Data::Dumper qw/Dumper/;
 use Carp;
 use Test::Deep;
 use Test::Builder();
-use B::Deparse;
 
-my $deparser = B::Deparse->new;
-$deparser->ambient_pragmas(strict => 'all', warnings => 'all');
+my $deparser;
+eval {
+    require B::Deparse;
+    $deparser = B::Deparse->new;
+    $deparser->ambient_pragmas(strict => 'all', warnings => 'all');
+};
+undef $deparser if $@;
 
 my %base_cmp_scalar = (
 	ok => sub {
@@ -295,7 +299,7 @@ sub try {
 	}
 	
     my $left;
-	if (ref $statement eq "CODE") {
+	if (ref $statement eq "CODE" && $deparser) {
 		my $deparse = $deparser->coderef2text($statement);
 		my @deparse = split m/\n\s*/, $deparse;
 		$deparse = join ' ', "sub", @deparse if 3 == @deparse;

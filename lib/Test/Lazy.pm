@@ -9,11 +9,11 @@ Test::Lazy - A quick and easy way to compose and run tests with useful output.
 
 =head1 VERSION
 
-Version 0.060
+Version 0.061
 
 =cut
 
-our $VERSION = '0.060';
+our $VERSION = '0.061';
 
 =head1 SYNOPSIS
 
@@ -67,19 +67,19 @@ For try or check, <compare> should be one of the below:
 
 =head2 Scalar
 
-	ok: Test::More::ok
+    ok: Test::More::ok
 
-	not_ok: ! Test::More::ok
+    not_ok: ! Test::More::ok
 
-	< > <= >= lt gt le ge == != eq ne: Test::More::cmp_ok
+    < > <= >= lt gt le ge == != eq ne: Test::More::cmp_ok
 
-	is isnt like unlike: Test::More::{is,isnt,like,unlike}
+    is isnt like unlike: Test::More::{is,isnt,like,unlike}
 
 =head2 Structural
 
-	ok: Test::More::ok
+    ok: Test::More::ok
 
-	not_ok: ! Test::More::ok
+    not_ok: ! Test::More::ok
 
     bag same_bag samebag: Test::Deep::cmp_bag
 
